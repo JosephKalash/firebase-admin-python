@@ -1,8 +1,8 @@
 [![Build Status](https://travis-ci.org/firebase/firebase-admin-python.svg?branch=master)](https://travis-ci.org/firebase/firebase-admin-python)
 [![Python](https://img.shields.io/pypi/pyversions/firebase-admin.svg)](https://pypi.org/project/firebase-admin/)
 [![Version](https://img.shields.io/pypi/v/firebase-admin.svg)](https://pypi.org/project/firebase-admin/)
-# Time Skew issue:
-Now you can pass click_skew (in seconds) to verify_id_token method when verify id token to take in account 
+# Clock Skew issue:
+Now you can pass clock_skew (in seconds) to verify_id_token method when verify id token to take in account 
 the time skew between Firebase time and server time.
 ```python
 decoded_token = auth.verify_id_token(id_token, clock_skew=60) # 60 sec
