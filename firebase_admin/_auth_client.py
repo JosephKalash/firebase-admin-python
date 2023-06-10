@@ -92,7 +92,7 @@ class Client:
         return self._token_generator.create_custom_token(
             uid, developer_claims, tenant_id=self.tenant_id)
 
-    def verify_id_token(self, id_token, check_revoked=False):
+    def verify_id_token(self, id_token, check_revoked=False, clock_skew=0):
         """Verifies the signature and data for the provided JWT.
 
         Accepts a signed token string, verifies that it is current, was issued
@@ -102,6 +102,7 @@ class Client:
             id_token: A string of the encoded JWT.
             check_revoked: Boolean, If true, checks whether the token has been revoked or
                 the user disabled (optional).
+            clock_skew: to set the clock skew in seconds
 
         Returns:
             dict: A dictionary of key-value pairs parsed from the decoded JWT.
@@ -124,7 +125,7 @@ class Client:
             raise ValueError('Illegal check_revoked argument. Argument must be of type '
                              ' bool, but given "{0}".'.format(type(check_revoked)))
 
-        verified_claims = self._token_verifier.verify_id_token(id_token)
+        verified_claims = self._token_verifier.verify_id_token(id_token, clock_skew)
         if self.tenant_id:
             token_tenant_id = verified_claims.get('firebase', {}).get('tenant')
             if self.tenant_id != token_tenant_id:
@@ -245,7 +246,7 @@ class Client:
                     True
                     for user_info in user_record.provider_data
                     if identifier.provider_id == user_info.provider_id
-                    and identifier.provider_uid == user_info.uid
+                       and identifier.provider_uid == user_info.uid
                 ), False)
             raise TypeError("Unexpected type: {}".format(type(identifier)))
 
@@ -280,11 +281,13 @@ class Client:
             ValueError: If max_results or page_token are invalid.
             FirebaseError: If an error occurs while retrieving the user accounts.
         """
+
         def download(page_token, max_results):
             return self._user_manager.list_users(page_token, max_results)
+
         return _user_mgt.ListUsersPage(download, page_token, max_results)
 
-    def create_user(self, **kwargs): # pylint: disable=differing-param-doc
+    def create_user(self, **kwargs):  # pylint: disable=differing-param-doc
         """Creates a new user account with the specified properties.
 
         Args:
@@ -311,7 +314,7 @@ class Client:
         uid = self._user_manager.create_user(**kwargs)
         return self.get_user(uid=uid)
 
-    def update_user(self, uid, **kwargs): # pylint: disable=differing-param-doc
+    def update_user(self, uid, **kwargs):  # pylint: disable=differing-param-doc
         """Updates an existing user account with the specified properties.
 
         Args:
